@@ -1,0 +1,19 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
+mainClassName = 'org.atoiks.games.starfield.server.Main'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+}
+
+task wrapper(type: Wrapper) {
+    description = 'Generates gradlew[.bat] scripts'
+    gradleVersion = '4.6'
+}
