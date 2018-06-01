@@ -30,6 +30,8 @@ public class Main {
         final Properties config = new Properties();
         try (final FileInputStream fis = new FileInputStream("server.properties")) {
             config.load(fis);
+        } catch (IOException ex) {
+            System.out.println("Cannot find server.properties, using default options");
         }
 
         final int rawPort = stringToInt(config.getProperty("port"), DEFAULT_PORT);
