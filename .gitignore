@@ -24,3 +24,5 @@ gradle-app.setting
 *~
 *.swp
 .DS_STORE
+
+*.love
