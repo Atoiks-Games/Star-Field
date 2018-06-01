@@ -3,7 +3,7 @@ function love.conf(t)
     t.identity = "star_field"
     t.appendidentity = false
     t.version = "11.1"
-    t.console = true
+    t.console = false
     t.accelerometerjoystick = false
     t.externalstorage = true
     t.gammacorrect = false
