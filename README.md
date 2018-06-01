@@ -1,7 +1,5 @@
 # Star Field
 
--------
-
 > Go around the stars
 >
 > Glide across the sky
