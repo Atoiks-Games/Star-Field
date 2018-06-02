@@ -21,35 +21,34 @@ function love.load()
     selected = {}
     netships = {}
 
-    -- Buttons *MUST* not overlap each other!
+    -- [[ Buttons *MUST* not overlap each other! ]]
     local font = love.graphics.newFont(14)
-    btn_fire_1 = Button:new(10, ylimit + 10, love.graphics.newText(font, "Fire 1"), function(btn)
-        for _, p in pairs(selected) do
-            if p[2].team ~= ctrl.team then
-                sendFireAsCurve(0, p[1])
+    btns_fire = {}
+    for i = 0, 1 do
+        btns_fire[i] = Button:new(10 + i * 50, ylimit + 10, love.graphics.newText(font, "Fire " .. (i + 1)), function(btn)
+            for _, p in pairs(selected) do
+                if p[2].team ~= ctrl.team then
+                    sendFireAsCurve(i, p[1])
+                end
             end
-        end
-    end)
-    btn_fire_2 = Button:new(60, ylimit + 10, love.graphics.newText(font, "Fire 2"), function(btn)
-        for _, p in pairs(selected) do
-            if p[2].team ~= ctrl.team then
-                sendFireAsCurve(1, p[1])
-            end
-        end
-    end)
+        end)
+    end
     btn_trace = Button:new(110, ylimit + 10, love.graphics.newText(font, "Follow"), function(btn)
         btn:setEnabled(false)
     end)
     btn_unsel = Button:new(xlimit - 80, ylimit + 10, love.graphics.newText(font, "Unselect"), function(btn)
         unselect_selected()
     end)
-    buttons = { btn_fire_1, btn_fire_2, btn_trace, btn_unsel }
+    btns_overlay = { btn_trace, btn_unsel }
+    for _, e in pairs(btns_fire) do
+        btns_overlay[#btns_overlay + 1] = e
+    end
 
     -- buttons related to server connection
-    btn_connect = {}
+    btns_connect = {}
     mod_on_address = true
     for i = 0, 9 do
-        btn_connect[i] = Button:new(40 + i * 20, 480, love.graphics.newText(font, '' .. i), function (btn)
+        btns_connect[i] = Button:new(40 + i * 20, 480, love.graphics.newText(font, '' .. i), function (btn)
             if mod_on_address then
                 address = address .. i
             else
@@ -57,26 +56,26 @@ function love.load()
             end
         end)
     end
-    btn_connect['.'] = Button:new(240, 480, love.graphics.newText(font, ' . '), function (btn)
+    btns_connect['.'] = Button:new(240, 480, love.graphics.newText(font, ' . '), function (btn)
         -- Only addresses can have `.` anyway
         address = address .. '.'
     end)
-    btn_connect['clr'] = Button:new(270, 480, love.graphics.newText(font, 'clear'), function (btn)
+    btns_connect['clr'] = Button:new(270, 480, love.graphics.newText(font, 'clear'), function (btn)
         if mod_on_address then
             address = ''
         else
             port = ''
         end
     end)
-    btn_connect['address'] = Button:new(40, 504, love.graphics.newText(font, 'address'), function (btn)
+    btns_connect['address'] = Button:new(40, 504, love.graphics.newText(font, 'address'), function (btn)
         mod_on_address = true
-        return btn_connect['.']:setEnabled(true)
+        return btns_connect['.']:setEnabled(true)
     end)
-    btn_connect['port'] = Button:new(120, 504, love.graphics.newText(font, 'port'), function (btn)
+    btns_connect['port'] = Button:new(120, 504, love.graphics.newText(font, 'port'), function (btn)
         mod_on_address = false
-        return btn_connect['.']:setEnabled(false)
+        return btns_connect['.']:setEnabled(false)
     end)
-    btn_connect['start'] = Button:new(40, 548, love.graphics.newText(font, 'Start'), function (btn)
+    btns_connect['start'] = Button:new(40, 548, love.graphics.newText(font, 'Start'), function (btn)
         local cadr = address ~= '' and address or DEFAULT_ADDR
         local cprt = port ~= '' and port or DEFAULT_PORT
         love.window.showMessageBox("Start connection", "You are about to connect to " .. cadr .. ':' .. cprt)
@@ -103,8 +102,8 @@ local t, updaterate = 0, 1 / 1
 local server_msg = ''
 function love.update(dt)
     if not server_selected then
-        btn_connect['address']:setEnabled(not mod_on_address)
-        return btn_connect['port']:setEnabled(mod_on_address)
+        btns_connect['address']:setEnabled(not mod_on_address)
+        return btns_connect['port']:setEnabled(mod_on_address)
     end
 
     t = t + dt
@@ -171,8 +170,9 @@ function love.update(dt)
     until not s
 
     local save = has_selected()
-    btn_fire_1:setEnabled(save)
-    btn_fire_2:setEnabled(save)
+    for _, e in pairs(btns_fire) do
+        e:setEnabled(save)
+    end
 end
 
 function to_game_screen_coords(x, y)
@@ -183,7 +183,7 @@ function love.draw()
     if not server_selected then
         love.graphics.draw(title, 0, 0)
         love.graphics.print("Will connect to " .. address .. ':' .. port .. "\nUse buttons below to change server info", 40, 400)
-        for _, b in pairs(btn_connect) do
+        for _, b in pairs(btns_connect) do
             b:render()
         end
         return
@@ -215,7 +215,7 @@ function love.draw()
     love.graphics.rectangle('fill', 0, ylimit, xlimit, 220)
 
     -- Draw buttons
-    for _, btn in pairs(buttons) do
+    for _, btn in pairs(btns_overlay) do
         love.graphics.setColor(1, 1, 1)
         btn:render()
     end
@@ -226,14 +226,17 @@ function love.draw()
     love.graphics.print(server_msg, 10, 600 - 18)
 end
 
+function click_dispatcher(btns, x, y)
+    for _, e in pairs(btns) do
+        if e:containsPoint(x, y) then
+            return e:click()
+        end
+    end
+end
+
 function love.mousepressed(x, y, button, istouch)
     if not server_selected then
-        -- Convert this to function
-        for _, e in pairs(btn_connect) do
-            if e:containsPoint(x, y) then
-                return e:click()
-            end
-        end
+        click_dispatcher(btns_connect, x, y)
         return
     end
 
@@ -257,11 +260,7 @@ function love.mousepressed(x, y, button, istouch)
             end
         end
     else
-        for _, e in pairs(buttons) do
-            if e:containsPoint(x, y) then
-                return e:click()
-            end
-        end
+        click_dispatcher(btns_overlay, x, y)
     end
 end
 
