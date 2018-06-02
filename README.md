@@ -12,7 +12,7 @@
 
 ## What is going on?
 
-`client/` contains the client, written in Lua, uses love2d, navigate to its folder and rin `./build.sh help` and see how to build
+`client/` contains the client, written in Lua, uses love2d, navigate to its folder and run `./build.sh help` and see how to build
 
 `server/` contains the server, written in Java 8, build with gradle wrapper
 
