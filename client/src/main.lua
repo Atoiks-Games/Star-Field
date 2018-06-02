@@ -21,6 +21,8 @@ function love.load()
     selected = {}
     netships = {}
 
+    game_map = love.graphics.newCanvas(MAX_X - MIN_X, MAX_Y - MIN_Y)
+
     -- [[ Buttons *MUST* not overlap each other! ]]
     local font = love.graphics.newFont(14)
     btns_fire = {}
@@ -36,7 +38,7 @@ function love.load()
     btn_trace = Button:new(110, ylimit + 10, love.graphics.newText(font, "Follow"), function(btn)
         btn:setEnabled(false)
     end)
-    btn_unsel = Button:new(xlimit - 80, ylimit + 10, love.graphics.newText(font, "Unselect"), function(btn)
+    btn_unsel = Button:new(xlimit - 260, ylimit + 10, love.graphics.newText(font, "Unselect"), function(btn)
         unselect_selected()
     end)
     btns_overlay = { btn_trace, btn_unsel }
@@ -179,6 +181,12 @@ function to_game_screen_coords(x, y)
     return x - 400 + ctrl.x, y - 300 + ctrl.y
 end
 
+function calculate_viewport_box(border_width)
+    wp1 = border_width + 1
+    del = (wp1 + 1) / 2
+    return ctrl.x - 400 - del, ctrl.y - 300 - del, 800 + wp1, ylimit + wp1
+end
+
 function love.draw()
     if not server_selected then
         love.graphics.draw(title, 0, 0)
@@ -189,13 +197,24 @@ function love.draw()
         return
     end
 
+    love.graphics.setCanvas(game_map)
     love.graphics.push()
-    love.graphics.translate(400 - ctrl.x, 300 - ctrl.y)
+    love.graphics.clear()
+    love.graphics.translate(-MIN_X, -MIN_Y)
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle('fill', MIN_X, MIN_Y, MAX_X - MIN_X, MAX_Y - MIN_Y)
     love.graphics.setColor(0, 1, 1)
     love.graphics.rectangle('line', MIN_X, MIN_Y, MAX_X - MIN_X, MAX_Y - MIN_Y)
 
+    -- Draw player being controlled
     love.graphics.setColor(0, 1, 1)
     ctrl:render()
+
+    -- Draw viewport box
+    love.graphics.setLineWidth(8)
+    love.graphics.setColor(0, 1, 1)
+    love.graphics.rectangle('line', calculate_viewport_box(8))
+    love.graphics.setLineWidth(1)
 
     for _, k in pairs(netships) do
         if k.team == nil then
@@ -210,6 +229,11 @@ function love.draw()
     end
     love.graphics.pop()
 
+    love.graphics.setCanvas()
+    love.graphics.push()
+    love.graphics.draw(game_map, 0, 0, 0, 1, 1, 400 + ctrl.x, 300 + ctrl.y)
+    love.graphics.pop()
+
     -- Draw overlay
     love.graphics.setColor(0.5, 0.5, 0.5)
     love.graphics.rectangle('fill', 0, ylimit, xlimit, 220)
@@ -219,6 +243,9 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         btn:render()
     end
+
+    -- Draw minimap
+    love.graphics.draw(game_map, xlimit - 160, ylimit + 2, 0, 0.095)
 
     -- Draw player info
     love.graphics.setColor(1, 1, 1)
