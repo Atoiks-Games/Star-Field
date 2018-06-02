@@ -13,8 +13,6 @@ local address, port = DEFAULT_ADDR, DEFAULT_PORT
 function love.load()
     tcp = socket.tcp()
     tcp:settimeout(0)
-    -- Do not connect just yet, user needs to select server address
-    -- tcp:connect(address, port)
 
     title = love.graphics.newImage("images/title.png")
 
@@ -59,11 +57,11 @@ function love.load()
             end
         end)
     end
-    btn_connect['.'] = Button:new(240, 480, love.graphics.newText(font, '.'), function (btn)
+    btn_connect['.'] = Button:new(240, 480, love.graphics.newText(font, ' . '), function (btn)
         -- Only addresses can have `.` anyway
         address = address .. '.'
     end)
-    btn_connect['clr'] = Button:new(260, 480, love.graphics.newText(font, 'clr'), function (btn)
+    btn_connect['clr'] = Button:new(270, 480, love.graphics.newText(font, 'clear'), function (btn)
         if mod_on_address then
             address = ''
         else
@@ -166,7 +164,9 @@ function love.update(dt)
             server_selected = false
             return love.window.showMessageBox("Connection issue", "Server " .. status .. "\nIs the server running?\nAre you connecting to the right server?\nIs the server already full?\n\nBringing you back to title screen")
         elseif status ~= "timeout" then
-            print(status)
+            tcp:close()
+            server_selected = false
+            return love.window.showMessageBox("Connection issue", status .. "\n\nBringing you back to title screen")
         end
     until not s
 
