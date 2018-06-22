@@ -206,7 +206,7 @@ end
 function love.draw()
     if not server_selected then
         love.graphics.draw(title, 0, 0)
-        love.graphics.print("Will connect to " .. address .. ':' .. port .. "\nUse buttons below to change server info", 40, 400)
+        love.graphics.print("Released under GPLv3\nhttps://github.com/Atoiks-Games/Star-Field/blob/master/client/LICENSE\n\nWill connect to " .. address .. ':' .. port .. "\nUse buttons below to change server info", 40, 400)
         for _, b in pairs(btns_connect) do
             b:render()
         end
