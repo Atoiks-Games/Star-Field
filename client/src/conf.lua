@@ -1,3 +1,8 @@
+--  Star-Field Client  Copyright (C) 2018  Atoiks-Games <atoiks-games@outlook.com>
+--  This program comes with ABSOLUTELY NO WARRANTY;
+--  This is free software, and you are welcome to redistribute it
+--  under certain conditions;
+
 -- See https://love2d.org/wiki/Config_Files for explaination
 function love.conf(t)
     t.identity = "star_field"
